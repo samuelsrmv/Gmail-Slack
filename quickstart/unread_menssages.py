@@ -9,14 +9,22 @@ import slack
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from flask import Flask
+from slackeventsapi import SlackEventAdapter
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
-def main():
-    """Shows basic usage of the Gmail API.
-    Lists the user's Gmail labels.
-    """
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+app = Flask(__name__)
+slack_event_adapter = SlackEventAdapter(os.environ['SIGNING_SECRET'], '/slack/events', app)
+client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
+BOT_ID = client.api_call("auth.test")['user_id']
+
+
+@slack_event_adapter.on('message')
+def message(payload):
+    """function"""
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -39,49 +47,36 @@ def main():
 
     # Call the Gmail API
     #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
+
     results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX'], q="category:primary").execute()
-    
-            
-
     messages = results.get('messages', [])
-    env_path = Path('.') / '.env'
-    load_dotenv(dotenv_path=env_path)
-    client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
-
     
-    if not messages:
-        # print("\n")
-        # print("--------------------------------")
-        # print('You have no unread messages!! 😍️')
-        # print("--------------------------------")
-        # print("\n")
-        client.chat_postMessage(channel='#test', text="You have no unread messages!! 😍️")
-    else:
-        count_ = 0
-        for message in messages:
-            count_ += 1
-            msg = service.users().messages().get(userId='me', id=message['id']).execute()
-        if count_ > 5 and count_ <= 9:
-            # print("\n")
-            # print("-------------------------------")
-            # print("You have {} unread messages! 😥️".format(count_))
-            # print("-------------------------------")
-            # print("\n")
-            client.chat_postMessage(channel='#test', text="You have {} unread messages! 😥️".format(count_))
-        elif count_ <= 5:
-            # print("\n")
-            # print("-------------------------------")
-            # print("You have {} unread messages 🤔️".format(count_))
-            # print("-------------------------------")
-            # print("\n")
-            client.chat_postMessage(channel='#test', text="You have {} unread messages 🤔️".format(count_))
-        else:
-            # print("\n")
-            # print("---------------------------------")
-            # print("You have {} unread messages!!! 😭️".format(count_))
-            # print("---------------------------------")
-            # print("\n")
-            client.chat_postMessage(channel='#test', text="You have {} unread messages!!! 😭️".format(count_))
+    event = payload.get('event', {})
+    channel_id = event.get('channel')
+    user_id = event.get('user')
+    text = event.get('text')
+
+    if text == "samuel":
+        if BOT_ID != user_id:            
+            if not messages:
+                client.chat_postMessage(channel=channel_id, text='You have no unread messages!! 😍️')
+            else:
+                count_ = 0
+                for message in messages:
+                    count_ += 1
+                    msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                
+                if text == "samuel":
+                    if count_ > 5 and count_ <= 9:
+                        client.chat_postMessage(channel=channel_id, text="You have {} unread messages! 😥️".format(count_))
+                    elif count_ <= 5:
+                        client.chat_postMessage(channel=channel_id, text="You have {} unread messages 🤔️".format(count_))
+                    else:
+                        client.chat_postMessage(channel=channel_id, text="You have {} unread messages!!! 😭️".format(count_))
+
+# If modifying these scopes, delete the file token.json.
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+
 if __name__ == '__main__':
-    main()
-# [END gmail_quickstart]
+    app.run(debug=True)
+# [END gmail_quickstart and Slack API]
