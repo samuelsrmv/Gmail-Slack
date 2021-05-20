@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 from flask import Flask
 from slackeventsapi import SlackEventAdapter
 import sys
+import wait_response
+from wait_response import wait_response_status
+
 
 
 env_path = Path('.') / '.env'
@@ -33,8 +36,7 @@ def message(payload):
     event = payload.get('event', {})
     text = event.get('text')
     user_id = event.get('user')
-    new_count = 0
-    if text == "samuel":
+    if text == "veronica":
         if os.path.exists('token.json'):
             creds = Credentials.from_authorized_user_file('token.json', SCOPES)
         # If there are no (valid) credentials available, let the user log in.
@@ -54,45 +56,121 @@ def message(payload):
         # Call the Gmail API
         #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
 
-        results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX'], q="category:primary").execute()
+        results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX']).execute()
         messages = results.get('messages', [])
-        
         
         channel_id = event.get('channel')
         user_id = event.get('user')
+    
+        if BOT_ID != user_id:            
+            if not messages:
+                client.chat_postMessage(channel=channel_id, text='Veronica has no pending messages 😎️')
+                
+            else:
+                count_ = len(messages)
+                if text == "veronica":
+                    if count_ > 5 and count_ <= 9:
+                        client.chat_postMessage(channel=channel_id, text="Veronica has {} unread messages 😥️".format(count_))
+                    elif count_ <= 5:
+                        client.chat_postMessage(channel=channel_id, text="Veronica has {} unread messages 🤔️".format(count_))
+                    else:
+                        client.chat_postMessage(channel=channel_id, text="Veronica has {} unread messages!!! 😭️".format(count_))
 
-        if text == "samuel":
+
+    elif text == "natalia":
+            if os.path.exists('tokennatalia.json'):
+                creds = Credentials.from_authorized_user_file('tokennatalia.json', SCOPES)
+            # If there are no (valid) credentials available, let the user log in.
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        'credentials-natalia.json', SCOPES)
+                    creds = flow.run_local_server(port=0)
+                # Save the credentials for the next run
+                with open('tokennatalia.json', 'w') as tokennatalia:
+                    tokennatalia.write(creds.to_json())
+
+            service = build('gmail', 'v1', credentials=creds)
+
+            # Call the Gmail API
+            #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
+
+            results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX']).execute()
+            messages = results.get('messages', [])
+            
+            channel_id = event.get('channel')
+            user_id = event.get('user')
+        
             if BOT_ID != user_id:            
                 if not messages:
-                    client.chat_postMessage(channel=channel_id, text='Samuel has no pending messages 😎️')
-                else:
-                    count_ = 0
-                    for message in messages:
-                        count_ += 1
-                        msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                    client.chat_postMessage(channel=channel_id, text='Natalia has no pending messages 😎️')
                     
-                    if text == "samuel":
+                else:
+                    count_ = len(messages)
+                    if text == "natalia":
                         if count_ > 5 and count_ <= 9:
-                            client.chat_postMessage(channel=channel_id, text="Samuel has {} unread messages 😥️".format(count_))
+                            client.chat_postMessage(channel=channel_id, text="Natalia has {} unread messages 😥️".format(count_))
                         elif count_ <= 5:
-                            client.chat_postMessage(channel=channel_id, text="Samuel has {} unread messages 🤔️".format(count_))
+                            client.chat_postMessage(channel=channel_id, text="Natalia has {} unread messages 🤔️".format(count_))
                         else:
-                            client.chat_postMessage(channel=channel_id, text="Samue has {} unread messages!!! 😭️".format(count_))
-    
-    elif text == "sergio" and new_count == 0:
-        new_count += 1
-        if os.path.exists('sergio_token.json'):
-            creds = Credentials.from_authorized_user_file('sergio_token.json', SCOPES)
+                            client.chat_postMessage(channel=channel_id, text="Natalia has {} unread messages!!! 😭️".format(count_))
+
+
+    elif text == "mathias":
+                if os.path.exists('tokenmathias.json'):
+                    creds = Credentials.from_authorized_user_file('tokenmathias.json', SCOPES)
+                # If there are no (valid) credentials available, let the user log in.
+                if not creds or not creds.valid:
+                    if creds and creds.expired and creds.refresh_token:
+                        creds.refresh(Request())
+                    else:
+                        flow = InstalledAppFlow.from_client_secrets_file(
+                            'credentials-mathias.json', SCOPES)
+                        creds = flow.run_local_server(port=0)
+                    # Save the credentials for the next run
+                    with open('tokenmathias.json', 'w') as tokenmathias:
+                        tokenmathias.write(creds.to_json())
+
+                service = build('gmail', 'v1', credentials=creds)
+
+                # Call the Gmail API
+                #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
+
+                results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX']).execute()
+                messages = results.get('messages', [])
+                
+                channel_id = event.get('channel')
+                user_id = event.get('user')
+            
+                if BOT_ID != user_id:            
+                    if not messages:
+                        client.chat_postMessage(channel=channel_id, text='Mathias has no pending messages 😎️')
+                        
+                    else:
+                        count_ = len(messages)
+                        if text == "mathias":
+                            if count_ > 5 and count_ <= 9:
+                                client.chat_postMessage(channel=channel_id, text="Mathias has {} unread messages 😥️".format(count_))
+                            elif count_ <= 5:
+                                client.chat_postMessage(channel=channel_id, text="Mathias has {} unread messages 🤔️".format(count_))
+                            else:
+                                client.chat_postMessage(channel=channel_id, text="Mathias has {} unread messages!!! 😭️".format(count_))
+
+    elif text == "todos":
+        if os.path.exists('token.json'):
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    'sergio_credentials.json', SCOPES)
+                    'credentials.json', SCOPES)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
-            with open('sergio_token.json', 'w') as token:
+            with open('token.json', 'w') as token:
                 token.write(creds.to_json())
 
         service = build('gmail', 'v1', credentials=creds)
@@ -100,77 +178,103 @@ def message(payload):
         # Call the Gmail API
         #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
 
-        results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX'], q="category:primary").execute()
+        results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX']).execute()
         messages = results.get('messages', [])
-        
         
         channel_id = event.get('channel')
         user_id = event.get('user')
-        if text == "sergio":
+    
+        if BOT_ID != user_id:            
+            if not messages:
+                client.chat_postMessage(channel=channel_id, text='Veronica has no pending messages 😎️')
+                
+            else:
+                count_ = len(messages)
+                if text == "todos":
+                    if count_ > 5 and count_ <= 9:
+                        client.chat_postMessage(channel=channel_id, text="Veronica has {} unread messages 😥️".format(count_))
+                    elif count_ <= 5:
+                        client.chat_postMessage(channel=channel_id, text="Veronica has {} unread messages 🤔️".format(count_))
+                    else:
+                        client.chat_postMessage(channel=channel_id, text="Veronica has {} unread messages!!! 😭️".format(count_))
+        
+        if os.path.exists('tokennatalia.json'):
+            creds = Credentials.from_authorized_user_file('tokennatalia.json', SCOPES)
+            # If there are no (valid) credentials available, let the user log in.
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        'credentials-natalia.json', SCOPES)
+                    creds = flow.run_local_server(port=0)
+                # Save the credentials for the next run
+                with open('tokennatalia.json', 'w') as tokennatalia:
+                    tokennatalia.write(creds.to_json())
+
+            service = build('gmail', 'v1', credentials=creds)
+
+            # Call the Gmail API
+            #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
+
+            results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX']).execute()
+            messages = results.get('messages', [])
+            
+            channel_id = event.get('channel')
+            user_id = event.get('user')
+        
             if BOT_ID != user_id:            
                 if not messages:
-                    client.chat_postMessage(channel=channel_id, text='Sergio has no unread messages!! 😎️')
+                    client.chat_postMessage(channel=channel_id, text='Natalia has no pending messages 😎️')
+                    
                 else:
-                    count_ = 0
-                    for message in messages:
-                        count_ += 1
-                        msg = service.users().messages().get(userId='me', id=message['id']).execute()
-                    
-                    if text == "sergio":
+                    count_ = len(messages)
+                    if text == "todos":
                         if count_ > 5 and count_ <= 9:
-                            client.chat_postMessage(channel=channel_id, text="Sergio has {} unread messages! 😥️".format(count_))
+                            client.chat_postMessage(channel=channel_id, text="Natalia has {} unread messages 😥️".format(count_))
                         elif count_ <= 5:
-                            client.chat_postMessage(channel=channel_id, text="Sergio has {} unread messages 🤔️".format(count_))
+                            client.chat_postMessage(channel=channel_id, text="Natalia has {} unread messages 🤔️".format(count_))
                         else:
-                            client.chat_postMessage(channel=channel_id, text="Sergio has {} unread messages!!! 😭️".format(count_))
+                            client.chat_postMessage(channel=channel_id, text="Natalia has {} unread messages!!! 😭️".format(count_))
 
+        if os.path.exists('tokenmathias.json'):
+            creds = Credentials.from_authorized_user_file('tokenmathias.json', SCOPES)
+            # If there are no (valid) credentials available, let the user log in.
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        'credentials-mathias.json', SCOPES)
+                    creds = flow.run_local_server(port=0)
+                # Save the credentials for the next run
+                with open('tokenmathias.json', 'w') as tokenmathias:
+                    tokenmathias.write(creds.to_json())
 
-    # elif text == "sergio":
-    #     if os.path.exists('sergio_token.json'):
-    #         creds = Credentials.from_authorized_user_file('sergio_token.json', SCOPES)
-    #     # If there are no (valid) credentials available, let the user log in.
-    #     if not creds or not creds.valid:
-    #         if creds and creds.expired and creds.refresh_token:
-    #             creds.refresh(Request())
-    #         else:
-    #             flow = InstalledAppFlow.from_client_secrets_file(
-    #                 'sergio_credentials.json', SCOPES)
-    #             creds = flow.run_local_server(port=0)
-    #         # Save the credentials for the next run
-    #         with open('sergio_token.json', 'w') as token:
-    #             token.write(creds.to_json())
+            service = build('gmail', 'v1', credentials=creds)
 
-    #     service = build('gmail', 'v1', credentials=creds)
+            # Call the Gmail API
+            #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
 
-    #     # Call the Gmail API
-    #     #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
-
-    #     results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX'], q="category:primary").execute()
-    #     messages = results.get('messages', [])
+            results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX']).execute()
+            messages = results.get('messages', [])
+            
+            channel_id = event.get('channel')
+            user_id = event.get('user')
         
-        
-    #     channel_id = event.get('channel')
-    #     user_id = event.get('user')
-    #     user_id = event.get('user')
-
-    #     if text == "sergio":
-    #         if BOT_ID != user_id:
-    #             if not messages:
-    #                 client.chat_postMessage(channel=channel_id, text='Sergio has no unread messages!! 😎️')
-    #             else:
-    #                 count_ = 0
-    #                 for message in messages:
-    #                     count_ += 1
-    #                     msg = service.users().messages().get(userId='me', id=message['id']).execute()
+            if BOT_ID != user_id:            
+                if not messages:
+                    client.chat_postMessage(channel=channel_id, text='Mathias has no pending messages 😎️')
                     
-    #                 if text == "sergio":
-    #                     if BOT_ID != user_id:            
-    #                         if count_ > 5 and count_ <= 9:
-    #                             client.chat_postMessage(channel=channel_id, text="Sergio has {} unread messages! 😥️".format(count_))
-    #                         elif count_ <= 5:
-    #                             client.chat_postMessage(channel=channel_id, text="Sergio has {} unread messages 🤔️".format(count_))
-    #                         else:
-    #                             client.chat_postMessage(channel=channel_id, text="Sergio has {} unread messages!!! 😭️".format(count_))
+                else:
+                    count_ = len(messages)
+                    if text == "todos":
+                        if count_ > 5 and count_ <= 9:
+                            client.chat_postMessage(channel=channel_id, text="Mathias has {} unread messages 😥️".format(count_))
+                        elif count_ <= 5:
+                            client.chat_postMessage(channel=channel_id, text="Mathias has {} unread messages 🤔️".format(count_))
+                        else:
+                            client.chat_postMessage(channel=channel_id, text="Mathias has {} unread messages!!! 😭️".format(count_))
 
 
 
