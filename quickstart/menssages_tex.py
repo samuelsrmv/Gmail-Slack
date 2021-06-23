@@ -41,34 +41,39 @@ def main():
 
     # Call the Gmail API
     #results = service.users().messages().list(userId='me', labelIds='INBOX', maxResults=1).execute()
-    results = service.users().messages().list(userId='me',labelIds=['INBOX'], q="category:primary", maxResults=5).execute()
     
-            
-
+    
+    results = service.users().messages().list(userId='me',labelIds=['UNREAD', 'INBOX'], q="category:primary", maxResults=5).execute()
     messages = results.get('messages', [])
-    env_path = Path('.') / '.env'
-    load_dotenv(dotenv_path=env_path)
-    client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
-
+    
     if not messages:
         print('No mensajes found.')
-        client.chat_postMessage(channel='#test', text="NO PUEDE SEEEEER \o/!")
     else:
         count = 1
+        lista = ["samuel", "noches", "descuento"]
+        new_list = []
         for message in messages:
             msg = service.users().messages().get(userId='me', id=message['id']).execute()
-            print("\n")
-            print("Message: {}".format(count))
-            print(msg['snippet'])
-            print("\n")
-            time.sleep(2)
-            count += 1
+            new = msg['snippet'].split(" ")
+
+            for word in new:
+                if word.lower() in lista:   
+                    print("entro")     
+                    # msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                    # print("\n")
+                    # print("Message: {}".format(count))
+                    # print(msg['snippet'])
+                    # print("\n")
+                    # time.sleep(2)
+                    # count += 1
+                
+                    
         print("-------------------------------")
         print("Total messages extracted: {} 😀️".format(count - 1))
         print("-------------------------------")
         print("\n")
 
-    
+            
 
 
 if __name__ == '__main__':
